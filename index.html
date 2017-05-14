@@ -1,0 +1,127 @@
+<html>
+<head>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/styles.css">
+    <title>Neighborhood Map Project</title>
+    <meta name="viewport" content="initial-scale=1.0">
+    <meta charset="utf-8">
+    <style>
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 100%;
+      }
+      /* Optional: Makes the sample page fill the window. */
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-2">
+                <div id="wrapper" class="active">
+                <div id="sidebar-wrapper">
+                  <ul id="sidebar_menu" class="sidebar-nav">
+                       <li class="sidebar-brand"><a id="menu-toggle" href="#">Menu<span id="main_icon" class="glyphicon glyphicon-align-justify"></span></a></li>
+                  </ul>
+                    <ul class="sidebar-nav" id="sidebar">
+                      <li><a>Link1<span class="sub_icon glyphicon"></span></a></li>
+                      <li><a>link2<span class="sub_icon glyphicon"></span></a></li>
+                    </ul>
+                  </div>
+                </div>
+            </div>
+            <div class="col-md-10">
+                <div id="map"></div>
+            </div>
+        </div>
+    </div>
+    <script>
+    var map;
+    var markers = [];
+
+    function initMap() {
+        // Constructor creates a new map - only center and zoom are required.
+        map = new google.maps.Map(document.getElementById('map'), {
+        center: {lat: 51.505458, lng: -0.075280},
+        zoom: 13
+        });
+
+        var locations = [
+            {title: 'London Bridge', location: {lat: 51.507827, lng: -0.087705}},
+            {title: 'St Katharine Marina', location: {lat: 51.506467, lng: -0.071531}},
+            {title: 'Tower of London', location: {lat: 51.508091, lng: -0.076234}},
+            {title: 'Shakespeare Globe', location: {lat: 51.508053, lng: -0.097294}},
+            {title: 'Crosse Keys', location: {lat: 51.512624, lng: -0.083912}}
+    ];
+
+        var largeInfowindow = new google.maps.InfoWindow();
+        var bounds = new google.maps.LatLngBounds();
+
+        for (var i = 0; i < locations.length; i++) {
+            // Get the position from the location array.
+            var position = locations[i].location;
+            var title = locations[i].title;
+            // Create a marker per location, and put into markers array.
+            var marker = new google.maps.Marker({
+            map: map,
+            position: position,
+            title: title,
+            animation: google.maps.Animation.DROP,
+            id: i
+            });
+            marker.addListener('click', function() {
+                toggleBounce(this)
+            });
+
+            // Push the marker to our array of markers.
+            markers.push(marker);
+            // Create an onclick event to open an infowindow at each marker.
+            marker.addListener('click', function() {
+            populateInfoWindow(this, largeInfowindow);
+            });
+            bounds.extend(markers[i].position);
+            }
+        // Extend the boundaries of the map for each marker
+        map.fitBounds(bounds);
+
+        // This function populates the infowindow when the marker is clicked. We'll only allow
+        // one infowindow which will open at the marker that is clicked, and populate based
+        // on that markers position.
+        function populateInfoWindow(marker, infowindow) {
+            // Check to make sure the infowindow is not already opened on this marker.
+            if (infowindow.marker != marker) {
+            infowindow.marker = marker;
+            infowindow.setContent('<div>' + marker.title + '</div>');
+            infowindow.open(map, marker);
+            // Make sure the marker property is cleared if the infowindow is closed.
+            infowindow.addListener('closeclick',function(){
+            infowindow.setMarker = null;
+            });
+        }
+    }
+        //Animate marker
+        function toggleBounce(marker) {
+            if (marker.getAnimation() !== null) {
+              marker.setAnimation(null);
+            } else {
+              marker.setAnimation(google.maps.Animation.BOUNCE);
+            }
+      }
+
+    }
+    </script>
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+    <script type="text/javascript" src="http://knockoutjs.com/downloads/knockout-3.4.2.js"></script>
+    <script type="text/javascript" src="js/script.js"></script>
+    <script async defer
+            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDVw7qT4o0o55QXw-I5a0RFvn3ydMXXb64&v=3&callback=initMap">
+    </script>
+</body>
+</html>
