@@ -14,8 +14,8 @@ var model = {
     ],
     //1.3 Holds our map markers
     markers: [],
-    //1.4 Column layout
-    columns: [{value: 'id'}, {value: 'title'}]
+    //1.4 Holds our filtered location markers
+    filteredLocationMarkers: []
 };
 
 ////////////////////////////////////////////
@@ -40,22 +40,35 @@ var controller = {
     },
 
     //3.2 Returns all the model locations
-    returnLocations: function () {
-        return model.locations.slice();
-    },
-
-    returnColumns: function () {
-        return model.columns;
+    returnLocations: function (flag) {
+         return model.locations.slice();
     },
 
     //3.3 Adds to the markers array in the model
     addToMarkers: function(marker) {
         model.markers.push(marker)
     },
+    
+    //3.4 Filters the locations based on list input
+    filterMarkers: function (data) {
+        //3.4.1 Copy the locations Array of Objects
+        var newMarkers = model.locations.slice();
+        //3.4.2 Filter the newly copied Array of Objects
+        newMarkers.filter(function (el) {
+           //3.4.3 If an object title matches the data object's title passed in
+           if (el.title == data.title) {
+               //3.4.4 Clear the model's filtered Location Markers array
+               model.filteredLocationMarkers = [];
+               //3.4.5 Push to this array what has been found
+               model.filteredLocationMarkers.push(data);
+               //3.4.6 Initialize the map view again
+               setInterval(mapView.initMap(),3000);
+           };
+        })
+    },
 
-    //3.4 Returns a copy of locations filtered by search result
-    updatedMarkers: function () {
-
+    returnFilteredMarkers: function () {
+        return model.filteredLocationMarkers.slice();
     }
 
 };
@@ -91,8 +104,12 @@ var mapView = {
 
     //4.3 Creates the markers on the map
     setMarkers: function(map, largeInfowindow, bounds) {
-        //4.3.1 Ask the controller to return the location data
-        var locationData = controller.returnLocations();
+        //4.3.1 Ask the controller to return the location data conditionally
+        if (model.filteredLocationMarkers.length <= 0) {
+            var locationData = controller.returnLocations();
+        } else {
+            var locationData = controller.returnFilteredMarkers();
+        };
 
         //4.3.2 Loop through every location in our array of objects
         for (var i = 0; i < locationData.length; i++) {
@@ -169,6 +186,8 @@ var viewModel = {
     for(var x in locations) {
       if(locations[x].title.toLowerCase().indexOf(value.toLowerCase()) >= 0) {
         viewModel.locations.push(locations[x]);
+          //send data so that we can filter markers
+          controller.filterMarkers(locations[x]);
       }
     }
   }
