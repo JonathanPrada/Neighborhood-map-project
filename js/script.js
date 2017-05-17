@@ -40,7 +40,7 @@ var controller = {
     },
 
     //3.2 Returns all the model locations
-    returnLocations: function (flag) {
+    returnLocations: function () {
          return model.locations.slice();
     },
 
@@ -62,7 +62,7 @@ var controller = {
                //3.4.5 Push to this array what has been found
                model.filteredLocationMarkers.push(data);
                //3.4.6 Initialize the map view again
-               setInterval(mapView.initMap(),3000);
+               mapView.initMap();
            };
         })
     },
@@ -107,9 +107,15 @@ var mapView = {
         //4.3.1 Ask the controller to return the location data conditionally
         if (model.filteredLocationMarkers.length <= 0) {
             var locationData = controller.returnLocations();
-        } else {
+        }
+        else { // <------------------------------------------------------------------------------------------------------ here is where you were
+            //if (document.getElementById('list').getElementsByTagName('li').length == 1) {
             var locationData = controller.returnFilteredMarkers();
-        };
+            //} else {
+            //   var locationData = controller.returnLocations();
+            //  }
+        }
+
 
         //4.3.2 Loop through every location in our array of objects
         for (var i = 0; i < locationData.length; i++) {

@@ -58,11 +58,11 @@
 
                 <input placeholder="Search…" type="search" data-bind="value: query, valueUpdate: 'keyup'" autocomplete="off">
 
-                <ul data-bind="template: {name:'location', foreach:locations}"></ul>
+                <ul id="list" data-bind="template: {name:'location', foreach:locations}"></ul>
 
 
                 <script type="text/html" id="location">
-                  <li id="menu">
+                  <li>
                     <span data-bind="text: id"></span>
                     <span data-bind="text: title"></span>
                   </li>
