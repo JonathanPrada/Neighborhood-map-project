@@ -6,16 +6,16 @@ var model = {
     currentLocation: null,
     //1.2 Store the locations in an Array of Objects
     locations: [
-            {id: 1, title: 'London Bridge', location: {lat: 51.507827, lng: -0.087705}},
-            {id: 2, title: 'St Katharine Marina', location: {lat: 51.506467, lng: -0.071531}},
-            {id: 3, title: 'Tower of London', location: {lat: 51.508091, lng: -0.076234}},
-            {id: 4, title: 'Shakespeare Globe', location: {lat: 51.508053, lng: -0.097294}},
-            {id: 5, title: 'Crosse Keys', location: {lat: 51.512624, lng: -0.083912}}
+            {title: 'Crosse Keys', location: {lat: 51.512624, lng: -0.083912}},
+            {title: 'London Bridge', location: {lat: 51.507827, lng: -0.087705}},
+            {title: 'St Katharine Marina', location: {lat: 51.506467, lng: -0.071531}},
+            {title: 'Tower of London', location: {lat: 51.508091, lng: -0.076234}},
+            {title: 'Shakespeare Globe', location: {lat: 51.508053, lng: -0.097294}}
     ],
     //1.3 Holds our map markers
     markers: [],
     //1.4 Holds our filtered location markers
-    filteredLocationMarkers: []
+    visibleMarkers: []
 };
 
 ////////////////////////////////////////////
@@ -33,10 +33,11 @@ var controller = {
 
     //3.1 Initialize the below when called
     init: function() {
-        //3.1.1 Point the current location to the hard coded locations
-        model.currentLocations = model.locations;
         //3.1.2 Initialize the View: "mapView"
-        mapView.init();
+        //mapView.init();
+        //3.1.1 Point the current location to the hard coded locations
+        listView.init();
+
     },
 
     //3.2 Returns all the model locations
@@ -47,28 +48,6 @@ var controller = {
     //3.3 Adds to the markers array in the model
     addToMarkers: function(marker) {
         model.markers.push(marker)
-    },
-    
-    //3.4 Filters the locations based on list input
-    filterMarkers: function (data) {
-        //3.4.1 Copy the locations Array of Objects
-        var newMarkers = model.locations.slice();
-        //3.4.2 Filter the newly copied Array of Objects
-        newMarkers.filter(function (el) {
-           //3.4.3 If an object title matches the data object's title passed in
-           if (el.title == data.title) {
-               //3.4.4 Clear the model's filtered Location Markers array
-               model.filteredLocationMarkers = [];
-               //3.4.5 Push to this array what has been found
-               model.filteredLocationMarkers.push(data);
-               //3.4.6 Initialize the map view again
-               mapView.initMap();
-           };
-        })
-    },
-
-    returnFilteredMarkers: function () {
-        return model.filteredLocationMarkers.slice();
     }
 
 };
@@ -78,71 +57,23 @@ var controller = {
 //4. Google API Map View
 var mapView = {
 
-    //4.1 Initialize the below when called
-    init: function () {
-        //4.1.1 Render the initial map onto our HTML
-        mapView.initMap();
-    },
+    //Gets called per place
+    addGoogleMarkers: function(place, map, largeInfoWindow) {
+        var markerOptions = {
+            map: map,
+            position: place.location,
+            title: place.title,
+            animation: google.maps.Animation.DROP,
+        };
 
-    //4.2 Set the google map up
-    initMap: function () {
-        //4.2.1 Set up variables for our map
-        var map;
-        var largeInfowindow = new google.maps.InfoWindow();
-        var bounds = new google.maps.LatLngBounds();
+        place.marker = new google.maps.Marker(markerOptions);
 
-        //4.2.2 Constructor creates a new map - only center and zoom are required.
-        map = new google.maps.Map(document.getElementById('map'), {
-            center: {lat: 51.505458, lng: -0.075280},
-            zoom: 14
+        place.marker.addListener('click', function(){
+            mapView.addAnimation(place.marker);
         });
 
-        //4.2.3 Pass in the map, largeInfowindow to the next method
-        mapView.setMarkers(map, largeInfowindow, bounds);
+        mapView.addInfoWindow(place.marker, largeInfoWindow);
 
-    },
-
-    //4.3 Creates the markers on the map
-    setMarkers: function(map, largeInfowindow, bounds) {
-        //4.3.1 Ask the controller to return the location data conditionally
-        if (model.filteredLocationMarkers.length <= 0) {
-            var locationData = controller.returnLocations();
-        }
-        else { // <------------------------------------------------------------------------------------------------------ here is where you were
-            //if (document.getElementById('list').getElementsByTagName('li').length == 1) {
-            var locationData = controller.returnFilteredMarkers();
-            //} else {
-            //   var locationData = controller.returnLocations();
-            //  }
-        }
-
-
-        //4.3.2 Loop through every location in our array of objects
-        for (var i = 0; i < locationData.length; i++) {
-            //4.3.2.1 Get the Latitude and Longitude from the individual model.location[index].property
-            var position = locationData[i].location;
-            //4.3.2.2 Get the Title from the individual model.location[index].property
-            var title = locationData[i].title;
-            //4.3.2.3 Create a marker at every iteration
-            var marker = new google.maps.Marker({
-                map: map,
-                position: position,
-                title: title,
-                animation: google.maps.Animation.DROP,
-                id: i
-            });
-
-            //4.3.2.4 Add an animation to each marker
-            marker.addListener('click', function() {
-                mapView.addAnimation(marker)
-            });
-
-            //4.3.2.5 Add to the markers array in the model
-            controller.addToMarkers(marker);
-
-            //4.3.2.6 Pass the marker in this iteration to addListener
-            mapView.addInfoWindow(marker, largeInfowindow);
-        }
     },
 
     //4.4 Adds animation to each marker
@@ -178,27 +109,73 @@ var mapView = {
 };
 
 ////////////////////////////////////////////
-var locations =  controller.returnLocations();
 
 //5. The List viewModel
-var viewModel = {
-  locations: ko.observableArray(controller.returnLocations()),
-  query: ko.observable(''),
+var listView = {
+    visiblePlaces: ko.observableArray(),
+    userInput: ko.observable(),
 
-    search: function(value) {
-    // remove all the current locations, which removes them from the view
-    viewModel.locations.removeAll();
+    init: function () {
+      listView.transferMarkers();
+      listView.buildMarkers();
+      listView.visiblePlacesFirst();
+      listView.filterMarkers();
+     },
 
-    for(var x in locations) {
-      if(locations[x].title.toLowerCase().indexOf(value.toLowerCase()) >= 0) {
-        viewModel.locations.push(locations[x]);
-          //send data so that we can filter markers
-          controller.filterMarkers(locations[x]);
-      }
+    transferMarkers: function () {
+        //For each of the locations in our model
+        model.locations.forEach(function (place) {
+                //Push into the markers array
+                model.visibleMarkers.push(new listView.Place(place))
+        });
+    },
+
+    //Build the markers based on our visible Markers
+    buildMarkers: function () {
+        var largeInfoWindow = new google.maps.InfoWindow();
+
+        var map = new google.maps.Map(document.getElementById('map'), {
+            center: {lat: 51.505458, lng: -0.075280},
+            zoom: 14
+        });
+
+        model.visibleMarkers.forEach(function (place) {
+            //console.log(place);
+            mapView.addGoogleMarkers(place, map, largeInfoWindow);
+        })
+    },
+
+    visiblePlacesFirst: function(){
+        model.visibleMarkers.forEach(function (place) {
+            listView.visiblePlaces.push(place);
+        })
+    },
+
+    filterMarkers: function () {
+      var searchInput = listView.userInput().toLowerCase();
+
+      listView.visiblePlaces.removeAll();
+
+      model.visibleMarkers.forEach(function (place) {
+          place.marker.setVisible(false);
+
+          if(place.title.toLowerCase().indexOf(searchInput) !== -1){
+              listView.visiblePlaces.push(place);
+          }
+      });
+
+      listView.visiblePlaces().forEach(function (place) {
+          place.marker.setVisible(true);
+      });
+
+    },
+
+    //Gets called at every transferMarkers for each iteration
+    Place: function (place) {
+        this.title = place.title;
+        this.location = place.location;
+        this.marker = null;
     }
-  }
 };
 
-viewModel.query.subscribe(viewModel.search);
-
-ko.applyBindings(viewModel);
+ko.applyBindings(listView);
