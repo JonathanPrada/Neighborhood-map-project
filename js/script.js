@@ -6,9 +6,12 @@ var model = {
     currentLocation: null,
     //1.2 Store the locations in an Array of Objects
     locations: [
-            {title: 'Crosse Keys', location: {lat: 51.512624, lng: -0.083912}},
+            {title: 'HMS Belfast', location: {lat: 51.506559, lng: -0.081314}},
             {title: 'London Bridge', location: {lat: 51.507827, lng: -0.087705}},
-            {title: 'St Katharine Marina', location: {lat: 51.506467, lng: -0.071531}},
+            {title: 'St Katharine Docks', location: {lat: 51.506467, lng: -0.071531}},
+            {title: 'Tower Bridge', location: {lat: 51.504307, lng: -0.076176}},
+            {title: 'Millennium Bridge', location: {lat: 51.509529, lng: -0.098543}},
+            {title: 'City of London', location: {lat: 51.512344, lng: -0.090985}},
             {title: 'Tower of London', location: {lat: 51.508091, lng: -0.076234}},
             {title: 'Shakespeare Globe', location: {lat: 51.508053, lng: -0.097294}}
     ],
@@ -95,16 +98,35 @@ var mapView = {
 
     //4.6 Populate the info window of each marker
     populateInfoWindow: function (marker, infowindow) {
-        // Check to make sure the infowindow is not already opened on this marker.
-        if (infowindow.marker != marker) {
-            infowindow.marker = marker;
-            infowindow.setContent('<div>' + marker.title + '</div>');
-            infowindow.open(map, marker);
-            // Make sure the marker property is cleared if the infowindow is closed.
-            infowindow.addListener('closeclick',function(){
-            infowindow.setMarker = null;
-            });
-        }
+
+        var wikiurl = 'http://en.wikipedia.org/w/api.php?action=opensearch&search='
+        + marker.title + '&format=json&callback=wikiCallback';
+
+        var wikiRequestTimeout=setTimeout(function(){
+            console.log("failed to load wikipedia resources");
+        },8000);
+
+            $.ajax({
+            url: wikiurl,
+            dataType: "jsonp",
+            success: function ( response ) {
+                // Get some info
+                var markerWikiInfo = (response[2]);
+                // Check to make sure the infowindow is not already opened on this marker.
+                if (infowindow.marker != marker) {
+                    infowindow.marker = marker;
+                    // Insert the info
+                    infowindow.setContent('<div>' + markerWikiInfo + '</div>');
+                    infowindow.open(map, marker);
+                    // Make sure the marker property is cleared if the infowindow is closed.
+                    infowindow.addListener('closeclick',function(){
+                    infowindow.setMarker = null;
+                    });
+                }
+            }
+
+        });
+        clearTimeout(wikiRequestTimeout);
     }
 };
 
