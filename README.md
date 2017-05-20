@@ -22,7 +22,7 @@ Open index.html
 
 ## CREDIT
 
-Credit given to P.R.M.C.S on CodePen for filter thought process.
+Credit given to P.R.M.C.S on CodePen for filter thought process.  
 Credit given to Udacity's @Karol and @Sarah_M for clarifications.
 
 ## DEMO
