@@ -22,4 +22,4 @@ Open index.html
 
 ## DEMO
 
-Live demo: http://jonathanprada.com/Map/index.html
+Live demo: http://jonathanprada.com/Neighborhood/index.html
