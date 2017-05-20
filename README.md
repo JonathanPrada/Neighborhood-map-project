@@ -20,6 +20,11 @@ index.html
 
 Open index.html
 
+## CREDIT
+
+Credit given to P.R.M.C.S on CodePen for filter thought process.
+Credit given to Udacity's @Karol and @Sarah_M for clarifications.
+
 ## DEMO
 
 Live demo: http://jonathanprada.com/Neighborhood/index.html
