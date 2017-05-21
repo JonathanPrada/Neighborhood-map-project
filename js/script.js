@@ -96,8 +96,8 @@ var mapView = {
         } else {
             marker.setAnimation(google.maps.Animation.BOUNCE);
             setTimeout(function() {
-                marker.setAnimation(null)
-            }, 2000);
+                marker.setAnimation(null);
+            }, 1400); // Two bounces each at 700ms
         }
     },
 
@@ -147,7 +147,7 @@ var mapView = {
 // The List viewModel
 var listView = {
     visiblePlaces: ko.observableArray(),
-    userInput: ko.observable(),
+    userInput: ko.observable(''),
 
     init: function() {
         listView.transferMarkers();
@@ -160,7 +160,7 @@ var listView = {
         // For each of the locations in our model
         model.locations.forEach(function(place) {
             //Push into the markers array
-            model.visibleMarkers.push(new listView.Place(place))
+            model.visibleMarkers.push(new listView.Place(place));
         });
     },
 
@@ -178,14 +178,14 @@ var listView = {
 
         model.visibleMarkers.forEach(function(place) {
             mapView.addGoogleMarkers(place, map, largeInfoWindow);
-        })
+        });
     },
 
     // For each visible marker, push into visible places
     visiblePlacesFirst: function() {
         model.visibleMarkers.forEach(function(place) {
             listView.visiblePlaces.push(place);
-        })
+        });
     },
 
     // Filter our visible places list here based on input
@@ -223,10 +223,19 @@ ko.applyBindings(listView);
 // Error handling for Google
 function googleError() {
     alert("the data can't be loaded");
-};
+}
 
 // Start the program, function used for Google API
 function initMap() {
     // Call the controller init method
     listView.init();
 }
+
+function listClick(data) {
+    var infowindow = new google.maps.InfoWindow();
+    data.marker.setAnimation(google.maps.Animation.BOUNCE);
+    setTimeout(function () {
+        data.marker.setAnimation(null);
+    }, 1400);
+    mapView.populateInfoWindow(data.marker, infowindow);
+};

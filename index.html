@@ -22,7 +22,7 @@
              <input id="input" type="search" placeholder="Search..." data-bind="textInput: userInput, event: {keyup: filterMarkers}">
                 <hr>
                 <div id="list-view" data-bind="foreach: visiblePlaces">
-                  <p data-bind="text: title"></p>
+                  <p data-bind="text: title, click: function(){listClick($data)}"></p>
                 </div>
 
             </div>
